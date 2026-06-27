@@ -15,6 +15,12 @@ php artisan route:cache
 php artisan view:cache
 php artisan migrate --force
 
+# DB connection plugin
+pecl install sqlsrv pdo_sqlsrv
+echo "extension=sqlsrv.so\nextension=pdo_sqlsrv.so" >> /usr/local/etc/php/conf.d/custom.ini
+php artisan migrate --force
+php-fpm
+
 # Configure Nginx to serve from /public
 cat > /etc/nginx/sites-available/default << 'EOF'
 server {
