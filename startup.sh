@@ -15,10 +15,28 @@ php artisan route:cache
 php artisan view:cache
 php artisan migrate --force
 
-# DB connection plugin
-pecl install sqlsrv pdo_sqlsrv
-echo "extension=sqlsrv.so\nextension=pdo_sqlsrv.so" >> /usr/local/etc/php/conf.d/custom.ini
+#!/bin/bash
+set -e
+
+# Install SQL Server extensions if not already present
+if [ ! -f /usr/local/lib/php/extensions/no-debug-non-zts-20220829/pdo_sqlsrv.so ]; then
+    apt-get update -y
+    apt-get install -y unixodbc-dev
+    pecl install sqlsrv pdo_sqlsrv
+fi
+
+# Write ini file cleanly (separate file, not appending to php.ini)
+cat > /usr/local/etc/php/conf.d/sqlsrv.ini << 'EOF'
+extension=sqlsrv.so
+extension=pdo_sqlsrv.so
+EOF
+
+# Run Laravel migrations
+cd /home/site/wwwroot
+php artisan config:cache
 php artisan migrate --force
+
+# Start PHP-FPM
 php-fpm
 
 # Configure Nginx to serve from /public
