@@ -110,6 +110,10 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'encrypt' => env('DB_ENCRYPT', 'yes'),
+            'login_timeout' => 60,   // wait up to 60s for serverless wake-up
+            'options' => [
+                PDO::ATTR_TIMEOUT => 60,
+            ],
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
