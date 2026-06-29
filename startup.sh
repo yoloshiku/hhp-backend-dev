@@ -17,7 +17,7 @@ server {
     listen [::]:8080;
     root /home/site/wwwroot/public;
     index index.php index.html index.htm;
-    server_name example.com www.example.com;
+    server_name _;
     port_in_redirect off;
 
     location / {
@@ -35,15 +35,14 @@ server {
         log_not_found off;
     }
 
-    location ~* [^/]\.php(/|$) {
-        fastcgi_split_path_info ^(.+?\.[Pp][Hh][Pp])(|/.*)$;
+    location ~ \.php$ {
+        try_files $uri =404;
         fastcgi_pass 127.0.0.1:9000;
         include fastcgi_params;
         fastcgi_param HTTP_PROXY "";
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        fastcgi_param PATH_INFO $fastcgi_path_info;
         fastcgi_param QUERY_STRING $query_string;
-        fastcgi_intercept_errors on;
+        fastcgi_intercept_errors off;
         fastcgi_connect_timeout         300;
         fastcgi_send_timeout           3600;
         fastcgi_read_timeout           3600;
@@ -55,7 +54,7 @@ server {
 }
 EONGINX
 
-service nginx reload
+nginx -t && service nginx reload
 
 cd /home/site/wwwroot
 
