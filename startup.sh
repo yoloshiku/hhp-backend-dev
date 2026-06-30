@@ -11,7 +11,8 @@ extension=pdo_sqlsrv.so
 EOINI
 
 # Fix nginx config with correct document root and try_files for Laravel routing
-cat > /etc/nginx/sites-available/default << 'EONGINX'
+# Write to sites-enabled (what nginx actually reads), not sites-available
+cat > /etc/nginx/sites-enabled/default << 'EONGINX'
 server {
     listen 8080;
     listen [::]:8080;
@@ -53,6 +54,9 @@ server {
     }
 }
 EONGINX
+
+# Ensure symlink from sites-available to sites-enabled exists for consistency
+ln -sf /etc/nginx/sites-enabled/default /etc/nginx/sites-available/default
 
 nginx -t && service nginx reload
 
