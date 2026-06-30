@@ -58,7 +58,13 @@ EONGINX
 # Ensure symlink from sites-available to sites-enabled exists for consistency
 ln -sf /etc/nginx/sites-enabled/default /etc/nginx/sites-available/default
 
-nginx -t && service nginx reload
+# Stop nginx started by init_container.sh (loaded old config) and restart
+# fresh so it reads the corrected sites-enabled/default from disk.
+# 'service nginx reload' silently no-ops in this Azure container image.
+nginx -s stop
+sleep 1
+nginx
+nginx -t
 
 cd /home/site/wwwroot
 
