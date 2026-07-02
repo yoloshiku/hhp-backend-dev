@@ -27,6 +27,16 @@ return Application::configure(basePath: dirname(__DIR__))
             }
             return route('login');
         });
+
+        // Prevent EnsureEmailIsVerified middleware from attempting to redirect
+        // to named route 'verification.notice' on API requests.
+        // Returning null causes it to abort with 403 instead.
+        $middleware->redirectUsersTo(function (Request $request) {
+            if ($request->is('api/*')) {
+                return null;
+            }
+            return route('verification.notice');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         /**
