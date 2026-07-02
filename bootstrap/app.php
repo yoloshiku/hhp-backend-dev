@@ -18,7 +18,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Prevent Authenticate middleware from attempting to redirect to a
+        // named 'login' route on API requests (this project has no web login).
+        // Returning null tells Laravel to throw AuthenticationException instead.
+        $middleware->redirectGuestsTo(function (Request $request) {
+            if ($request->is('api/*')) {
+                return null;
+            }
+            return route('login');
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         /**
@@ -85,9 +93,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
         /**
          * Fallback - unexpected errors
+         * Always return JSON for API routes regardless of Accept header.
          */
         $exceptions->render(function (Throwable $e, Request $request) {
-            if ($request->expectsJson()) {
+            if ($request->expectsJson() || $request->is('api/*')) {
 
                 Log::error('Global exception caught', [
                     'type' => get_class($e),
