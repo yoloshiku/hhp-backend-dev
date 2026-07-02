@@ -14,8 +14,10 @@ extension=sqlsrv.so
 extension=pdo_sqlsrv.so
 EOINI
 
-# Fix nginx config with correct document root and try_files for Laravel routing
-# Write to sites-enabled (what nginx actually reads), not sites-available
+# Write correct nginx config to disk
+# init_container.sh will re-launch nginx AFTER exec php-fpm using
+# sites-available/default, so we also schedule a delayed background
+# restart (see bottom of script) to apply the correct config last.
 cat > /etc/nginx/sites-enabled/default << 'EONGINX'
 server {
     listen 8080;
@@ -59,16 +61,8 @@ server {
 }
 EONGINX
 
-# Ensure symlink from sites-available to sites-enabled exists for consistency
-ln -sf /etc/nginx/sites-enabled/default /etc/nginx/sites-available/default
-
-# Stop nginx started by init_container.sh (loaded old config) and restart
-# fresh so it reads the corrected sites-enabled/default from disk.
-# 'service nginx reload' silently no-ops in this Azure container image.
-nginx -s stop
-sleep 1
-nginx
-nginx -t
+# Sync config to sites-available so both locations are consistent
+cp /etc/nginx/sites-enabled/default /etc/nginx/sites-available/default
 
 cd /home/site/wwwroot
 
@@ -85,5 +79,16 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 php artisan migrate --force
+
+# Background job: wait for init_container.sh to re-launch nginx after
+# exec php-fpm, then overwrite config and restart nginx with correct settings.
+# 10s delay is enough for init_container.sh to finish its nginx re-launch.
+(
+  sleep 10
+  cp /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+  nginx -s stop
+  sleep 1
+  nginx
+) &
 
 exec php-fpm
