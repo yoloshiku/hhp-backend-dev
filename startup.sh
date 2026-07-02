@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# Copy production php.ini baseline
+# (moved here so Azure startup command can be a single line)
+cp /usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
+
 # Fix corrupted php.ini line
 sed -i 's|extension=pdo_sqlsrv.so /home/site/wwwroot/startup.sh||g' /usr/local/etc/php/php.ini
 
