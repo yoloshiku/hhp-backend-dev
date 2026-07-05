@@ -23,7 +23,7 @@ return [
         'http://localhost:3000',
         'http://127.0.0.1:3000',
         'http://localhost:5173',
-        'https://mango-dune-0930a291e.7.azurestaticapps.net',
+        'https://gentle-island-07387ab1e.7.azurestaticapps.net',
     ],
 
     'allowed_origins_patterns' => [],
@@ -34,6 +34,6 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 
 ];
